@@ -136,6 +136,7 @@ function lunch()
     export TARGET_BUILD_TYPE=release
 
     echo
+    printconfig
 }
 
 VARIANT_CHOICES=(kernel anykernel)
@@ -169,6 +170,28 @@ function check_product()
     fi
 }
 
+# Get the exact value of a build variable.
+function get_build_var()
+{
+    T=$(gettop)
+    if [ ! "$T" ]; then
+        echo "Couldn't locate the top of the tree.  Try setting TOP." >&2
+        return
+    fi
+    (\cd $T; CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core \
+      command make --no-print-directory -f build/core/config.mk dumpvar-$1)
+}
+
+function printconfig()
+{
+    T=$(gettop)
+    if [ ! "$T" ]; then
+        echo "Couldn't locate the top of the tree.  Try setting TOP." >&2
+        return
+    fi
+    get_build_var report_config
+}
+
 if [ "x$SHELL" != "x/bin/bash" ]; then
     case `ps -o command -p $$` in
         *bash*)
@@ -190,5 +213,6 @@ do
 done
 unset f
 
+export CORE_COUNT=$(cat /proc/cpuinfo | grep "^processor" | wc -l)
 export ANDROID_BUILD_TOP=$(gettop)
-export OUT_DIR=$ANDROID_BUILD_TOP/out/$RENDER_PRODUCT
+export OUT_DIR=$OUT_DIR

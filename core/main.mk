@@ -1,6 +1,21 @@
-.PHONY: nothing
-nothing:
+.PHONY: kernel
+kernel:
 	@echo "\033[32m Starting build \033[0m"
+	$(hide) $(KERNEL_BUILD_SCRIPT) \
+			$(PRODUCT_DEFCONFIG) \
+			ARCH=$(ARCH) \
+			CROSS_COMPILE=$(CROSS_COMPILE) \
+			$(PRODUCT_KERNEL_SOURCE)
+
+.PHONY: kernelclean
+kernelclean:
+	@echo "\033[32m Cleaning source \033[0m"
+	$(shell cd $(PRODUCT_KERNEL_SOURCE) && make mrproper)
+
+.PHONY: kernelclobber
+kernelclobber: kernelclean
+	@echo "\033[32m Full cleaning \033[0m"
+	$(shell rm -rf $OUT_DIR/*)
 
 BUILD_SYSTEM := $(TOPDIR)build/core
 
@@ -25,3 +40,19 @@ $(strip \
 endef
 
 include $(BUILD_SYSTEM)/definitions.mk
+include $(BUILD_SYSTEM)/dumpvar.mk
+
+# ---------------------------------------------------------------
+# figure out the output directories
+
+ifeq (,$(strip $(OUT_DIR)))
+ifeq (,$(strip $(OUT_DIR_COMMON_BASE)))
+ifneq ($(TOPDIR),)
+OUT_DIR := $(TOPDIR)out
+else
+OUT_DIR := $(CURDIR)/out
+endif
+else
+OUT_DIR := $(OUT_DIR_COMMON_BASE)/$(notdir $(PWD))
+endif
+endif
