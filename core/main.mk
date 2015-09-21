@@ -1,16 +1,21 @@
 .PHONY: kernel
 kernel:
 	@echo "\033[32m Starting build \033[0m"
-	$(hide) $(KERNEL_BUILD_SCRIPT) \
-			$(PRODUCT_DEFCONFIG) \
-			ARCH=$(ARCH) \
-			CROSS_COMPILE=$(CROSS_COMPILE) \
-			$(PRODUCT_KERNEL_SOURCE)
+	@mkdir -p $(OUT_DIR)/system
+	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) $(PRODUCT_DEFCONFIG)
+	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE)
+	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) dtbs
+	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) INSTALL_MOD_PATH=../../$(KERNEL_MODULES_INSTALL) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules_install
+	@cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)
+	$(mv-modules)
+	$(clean-module-folder)
+
 
 .PHONY: kernelclean
 kernelclean:
 	@echo "\033[32m Cleaning source \033[0m"
-	$(shell cd $(PRODUCT_KERNEL_SOURCE) && make mrproper)
+	make -C $(PRODUCT_KERNEL_SOURCE) mrproper
 
 .PHONY: kernelclobber
 kernelclobber: kernelclean

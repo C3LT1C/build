@@ -133,7 +133,6 @@ function lunch()
 
     export TARGET_PRODUCT=$product
     export TARGET_BUILD_VARIANT=$variant
-    export TARGET_BUILD_TYPE=release
 
     echo
     printconfig
@@ -215,4 +214,13 @@ unset f
 
 export CORE_COUNT=$(cat /proc/cpuinfo | grep "^processor" | wc -l)
 export ANDROID_BUILD_TOP=$(gettop)
-export OUT_DIR=$OUT_DIR
+export OUT_DIR=$(get_build_var OUT_DIR)
+function help()
+{
+cat <<EOF
+Currently 2 build targets apply
+kernel - will build source with $CORE_COUNT threads
+kernelclean - cleans source
+kernelclobber - cleans source & removes zImage from $OUT_DIR
+EOF
+}
