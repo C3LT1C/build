@@ -2221,16 +2221,12 @@ define _import-node
 endef
 
 KERNEL_HEADERS_INSTALL := $(KERNEL_OUT)/usr
-KERNEL_MODULES_INSTALL := system
 KERNEL_MODULES_OUT := $(OUT_DIR)/system/lib/modules
 
 define mv-modules
-    mdpath=`find $(PRODUCT_KERNEL_SOURCE) -type f -name modules.order`;\
-    if [ "$$mdpath" != "" ];then\
-        mpath=`dirname $$mdpath`;\
-        ko=`find $$mpath/kernel -type f -name *.ko`;\
-        for i in $$ko; do CROSS_COMPILE=$(CROSS_COMPILE)/arm-eabi-strip --strip-unneeded $$i;\
-        mv $$i $(KERNEL_MODULES_OUT)/; done;\
+				mkdir -p $(KERNEL_MODULES_OUT);\
+        ko=`find $(PRODUCT_KERNEL_SOURCE) -type f -name *.ko`;\
+        for i in $$ko; do mv $$i $(KERNEL_MODULES_OUT)/; done;\
     fi
 endef
 
