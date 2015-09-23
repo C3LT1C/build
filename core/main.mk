@@ -1,11 +1,10 @@
 .PHONY: kernel
 kernel:
 	@echo "\033[32m Starting build \033[0m"
-	@mkdir -p $(OUT_DIR)/system
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) $(PRODUCT_DEFCONFIG) > /dev/null
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE)
-	@cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)
 	$(mv-modules)
+	@cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)
 
 .PHONY: kernelclean
 kernelclean:
@@ -18,8 +17,6 @@ kernelclobber: kernelclean
 	$(shell rm -rf $(OUT_DIR)/*)
 
 BUILD_SYSTEM := $(TOPDIR)build/core
-
-include $(BUILD_SYSTEM)/envsetup.mk
 
 ifneq ($(dont_bother),true)
 subdir_makefiles := \
@@ -41,6 +38,7 @@ endef
 
 include $(BUILD_SYSTEM)/definitions.mk
 include $(BUILD_SYSTEM)/dumpvar.mk
+include $(BUILD_SYSTEM)/envsetup.mk
 
 # ---------------------------------------------------------------
 # figure out the output directories

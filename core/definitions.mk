@@ -175,28 +175,6 @@ $(wildcard $(addsuffix /Android.mk, $(addprefix $(call my-dir)/,$(1))))
 endef
 
 ###########################################################
-## Find all of the java files under the named directories.
-## Meant to be used like:
-##    SRC_FILES := $(call all-java-files-under,src tests)
-###########################################################
-
-define all-java-files-under
-$(patsubst ./%,%, \
-  $(shell cd $(LOCAL_PATH) ; \
-          find -L $(1) -name "*.java" -and -not -name ".*") \
- )
-endef
-
-###########################################################
-## Find all of the java files from here.  Meant to be used like:
-##    SRC_FILES := $(call all-subdir-java-files)
-###########################################################
-
-define all-subdir-java-files
-$(call all-java-files-under,.)
-endef
-
-###########################################################
 ## Find all of the c files under the named directories.
 ## Meant to be used like:
 ##    SRC_FILES := $(call all-c-files-under,src tests)
@@ -333,34 +311,6 @@ endef
 define find-subdir-subdir-files
 $(filter-out $(patsubst %,$(1)/%,$(3)),$(patsubst ./%,%,$(shell cd \
             $(LOCAL_PATH) ; find -L $(1) -maxdepth 1 -name $(2))))
-endef
-
-###########################################################
-## Find all of the files matching pattern
-##    SRC_FILES := $(call all-subdir-java-files)
-###########################################################
-
-define find-subdir-assets
-$(if $(1),$(patsubst ./%,%, \
-	$(shell if [ -d $(1) ] ; then cd $(1) ; find ./ -not -name '.*' -and -type f -and -not -type l ; fi)), \
-	$(warning Empty argument supplied to find-subdir-assets) \
-)
-endef
-
-###########################################################
-## Find various file types in a list of directories relative to $(LOCAL_PATH)
-###########################################################
-
-define find-other-java-files
-	$(call find-subdir-files,$(1) -name "*.java" -and -not -name ".*")
-endef
-
-define find-other-aidl-files
-	$(call find-subdir-files,$(1) -name "*.aidl" -and -not -name ".*")
-endef
-
-define find-other-html-files
-	$(call find-subdir-files,$(1) -name "*.html" -and -not -name ".*")
 endef
 
 ###########################################################
@@ -544,20 +494,6 @@ $(foreach module,$(1),$(ALL_MODULES.$(module).INSTALLED))
 endef
 
 ###########################################################
-## Convert a list of short modules names (e.g., "framework", "Browser")
-## into the list of files that should be used when linking
-## against that module as a public API.
-## TODO: Allow this for more than JAVA_LIBRARIES modules
-## NOTE: this won't return reliable results until after all
-## sub-makefiles have been included.
-## $(1): target list
-###########################################################
-
-define module-stubs-files
-$(foreach module,$(1),$(ALL_MODULES.$(module).STUBS))
-endef
-
-###########################################################
 ## Evaluates to the timestamp file for a doc module, which
 ## is the dependency that should be used.
 ## $(1): doc module
@@ -567,43 +503,6 @@ define doc-timestamp-for
 $(OUT_DOCS)/$(strip $(1))-timestamp
 endef
 
-
-###########################################################
-## Convert "core ext framework" to "out/.../javalib.jar ..."
-## $(1): library list
-## $(2): Non-empty if IS_HOST_MODULE
-###########################################################
-
-# $(1): library name
-# $(2): Non-empty if IS_HOST_MODULE
-define _java-lib-dir
-$(call intermediates-dir-for, \
-	JAVA_LIBRARIES,$(1),$(2),COMMON)
-endef
-
-# $(1): library name
-# $(2): Non-empty if IS_HOST_MODULE
-define _java-lib-full-classes.jar
-$(call _java-lib-dir,$(1),$(2))/classes$(COMMON_JAVA_PACKAGE_SUFFIX)
-endef
-
-# $(1): library name list
-# $(2): Non-empty if IS_HOST_MODULE
-define java-lib-files
-$(foreach lib,$(1),$(call _java-lib-full-classes.jar,$(lib),$(2)))
-endef
-
-# $(1): library name
-# $(2): Non-empty if IS_HOST_MODULE
-define _java-lib-full-dep
-$(call _java-lib-dir,$(1),$(2))/$(if $(2),javalib,classes)$(COMMON_JAVA_PACKAGE_SUFFIX)
-endef
-
-# $(1): library name list
-# $(2): Non-empty if IS_HOST_MODULE
-define java-lib-deps
-$(foreach lib,$(1),$(call _java-lib-full-dep,$(lib),$(2)))
-endef
 
 ###########################################################
 ## Run rot13 on a string
@@ -791,8 +690,6 @@ define dump-module-variables
 @echo PRIVATE_ARFLAGS=$(PRIVATE_ARFLAGS);
 @echo PRIVATE_AAPT_FLAGS=$(PRIVATE_AAPT_FLAGS);
 @echo PRIVATE_DX_FLAGS=$(PRIVATE_DX_FLAGS);
-@echo PRIVATE_JAVACFLAGS=$(PRIVATE_JAVACFLAGS);
-@echo PRIVATE_JAVA_LIBRARIES=$(PRIVATE_JAVA_LIBRARIES);
 @echo PRIVATE_ALL_SHARED_LIBRARIES=$(PRIVATE_ALL_SHARED_LIBRARIES);
 @echo PRIVATE_ALL_STATIC_LIBRARIES=$(PRIVATE_ALL_STATIC_LIBRARIES);
 @echo PRIVATE_ALL_WHOLE_STATIC_LIBRARIES=$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES);
@@ -857,28 +754,6 @@ cat $(@:$1=$(YACC_HEADER_SUFFIX)) >> $(@:$1=.h)
 echo '#endif' >> $(@:$1=.h)
 endef
 
-###########################################################
-## Commands to compile RenderScript to Java
-###########################################################
-
-define transform-renderscripts-to-java-and-bc
-@echo "RenderScript: $(PRIVATE_MODULE) <= $(PRIVATE_RS_SOURCE_FILES)"
-$(hide) rm -rf $(PRIVATE_RS_OUTPUT_DIR)
-$(hide) mkdir -p $(PRIVATE_RS_OUTPUT_DIR)/res/raw
-$(hide) mkdir -p $(PRIVATE_RS_OUTPUT_DIR)/src
-$(hide) $(PRIVATE_RS_CC) \
-  -o $(PRIVATE_RS_OUTPUT_DIR)/res/raw \
-  -p $(PRIVATE_RS_OUTPUT_DIR)/src \
-  -d $(PRIVATE_RS_OUTPUT_DIR) \
-  -a $@ -MD \
-  $(addprefix -target-api , $(PRIVATE_RS_TARGET_API)) \
-  $(PRIVATE_RS_FLAGS) \
-  $(foreach inc,$(PRIVATE_RS_INCLUDES),$(addprefix -I , $(inc))) \
-  $(PRIVATE_RS_SOURCE_FILES)
-$(hide) mkdir -p $(dir $@)
-$(hide) touch $@
-endef
-
 define transform-bc-to-so
 @echo "Renderscript compatibility: $(notdir $@) <= $(notdir $<)"
 $(hide) mkdir -p $(dir $@)
@@ -910,49 +785,6 @@ $(hide) $(PRIVATE_RS_CC) \
   $(addprefix -I , $(PRIVATE_RS_INCLUDES)) \
   $(PRIVATE_RS_SOURCE_FILES)
 $(hide) mkdir -p $(dir $@)
-$(hide) touch $@
-endef
-
-
-###########################################################
-## Commands for running aidl
-###########################################################
-
-define transform-aidl-to-java
-@mkdir -p $(dir $@)
-@echo "Aidl: $(PRIVATE_MODULE) <= $<"
-$(hide) $(AIDL) -d$(patsubst %.java,%.P,$@) $(PRIVATE_AIDL_FLAGS) $< $@
-endef
-#$(AIDL) $(PRIVATE_AIDL_FLAGS) $< - | indent -nut -br -npcs -l1000 > $@
-
-
-###########################################################
-## Commands for running java-event-log-tags.py
-###########################################################
-
-define transform-logtags-to-java
-@mkdir -p $(dir $@)
-@echo "logtags: $@ <= $<"
-$(hide) $(JAVATAGS) -o $@ $^
-endef
-
-
-###########################################################
-## Commands for running protoc to compile .proto into .java
-###########################################################
-
-define transform-proto-to-java
-@mkdir -p $(dir $@)
-@echo "Protoc: $@ <= $(PRIVATE_PROTO_SRC_FILES)"
-@rm -rf $(PRIVATE_PROTO_JAVA_OUTPUT_DIR)
-@mkdir -p $(PRIVATE_PROTO_JAVA_OUTPUT_DIR)
-$(hide) for f in $(PRIVATE_PROTO_SRC_FILES); do \
-        $(PROTOC) \
-        $(addprefix --proto_path=, $(PRIVATE_PROTO_INCLUDES)) \
-        $(PRIVATE_PROTO_JAVA_OUTPUT_OPTION)="$(PRIVATE_PROTO_JAVA_OUTPUT_PARAMS):$(PRIVATE_PROTO_JAVA_OUTPUT_DIR)" \
-        $(PRIVATE_PROTOC_FLAGS) \
-        $$f || exit 33; \
-        done
 $(hide) touch $@
 endef
 
@@ -1463,57 +1295,6 @@ define transform-host-o-to-executable
 $(transform-host-o-to-executable-inner)
 endef
 
-
-###########################################################
-## Commands for running javac to make .class files
-###########################################################
-
-#@echo "Source intermediates dir: $(PRIVATE_SOURCE_INTERMEDIATES_DIR)"
-#@echo "Source intermediates: $$(find $(PRIVATE_SOURCE_INTERMEDIATES_DIR) -name '*.java')"
-
-# TODO: Right now we generate the asset resources twice, first as part
-# of generating the Java classes, then at the end when packaging the final
-# assets.  This should be changed to do one of two things: (1) Don't generate
-# any resource files the first time, only create classes during that stage;
-# or (2) Don't use the -c flag with the second stage, instead taking the
-# resource files from the first stage as additional input.  My original intent
-# was to use approach (2), but this requires a little more work in the tool.
-# Maybe we should just use approach (1).
-
-# This rule creates the R.java and Manifest.java files, both of which
-# are PRODUCT-neutral.  Don't pass PRIVATE_PRODUCT_AAPT_CONFIG to this invocation.
-define create-resource-java-files
-@mkdir -p $(PRIVATE_SOURCE_INTERMEDIATES_DIR)
-@mkdir -p $(dir $(PRIVATE_RESOURCE_PUBLICS_OUTPUT))
-$(hide) $(AAPT) package $(PRIVATE_AAPT_FLAGS) -m \
-    $(eval # PRIVATE_PRODUCT_AAPT_CONFIG is intentionally missing-- see comment.) \
-    $(addprefix -J , $(PRIVATE_SOURCE_INTERMEDIATES_DIR)) \
-    $(addprefix -M , $(PRIVATE_ANDROID_MANIFEST)) \
-    $(addprefix -P , $(PRIVATE_RESOURCE_PUBLICS_OUTPUT)) \
-    $(addprefix -S , $(PRIVATE_RESOURCE_DIR)) \
-    $(addprefix -A , $(PRIVATE_ASSET_DIR)) \
-    $(addprefix -I , $(PRIVATE_AAPT_INCLUDES)) \
-    $(addprefix -G , $(PRIVATE_PROGUARD_OPTIONS_FILE)) \
-    $(addprefix --min-sdk-version , $(PRIVATE_DEFAULT_APP_TARGET_SDK)) \
-    $(addprefix --target-sdk-version , $(PRIVATE_DEFAULT_APP_TARGET_SDK)) \
-    $(if $(filter --version-code,$(PRIVATE_AAPT_FLAGS)),,$(addprefix --version-code , $(PLATFORM_SDK_VERSION))) \
-    $(if $(filter --version-name,$(PRIVATE_AAPT_FLAGS)),,$(addprefix --version-name , $(PLATFORM_VERSION)-$(BUILD_NUMBER))) \
-    $(addprefix --rename-manifest-package , $(PRIVATE_MANIFEST_PACKAGE_NAME)) \
-    $(addprefix --rename-instrumentation-target-package , $(PRIVATE_MANIFEST_INSTRUMENTATION_FOR))
-endef
-
-ifeq ($(HOST_OS),windows)
-xlint_unchecked :=
-else
-xlint_unchecked := -Xlint:unchecked
-endif
-
-ifeq (true, $(ENABLE_INCREMENTALJAVAC))
-incremental_dex := --incremental
-else
-incremental_dex :=
-endif
-
 # emit-line, <word list>, <output file>
 define emit-line
    $(if $(1),echo -n '$(strip $(1)) ' >> $(2))
@@ -1565,151 +1346,6 @@ define unzip-jar-files
     unzip -qo $$f -d $(2); \
   done \
   $(if $(PRIVATE_DONT_DELETE_JAR_META_INF),,;rm -rf $(2)/META-INF)
-endef
-
-# Common definition to invoke javac on the host and target.
-#
-# Some historical notes:
-# - below we write the list of java files to java-source-list to avoid argument
-#   list length problems with Cygwin
-# - we filter out duplicate java file names because eclipse's compiler
-#   doesn't like them.
-#
-# $(1): javac
-# $(2): bootclasspath
-define compile-java
-$(hide) rm -f $@
-$(hide) rm -rf $(PRIVATE_CLASS_INTERMEDIATES_DIR)
-$(hide) mkdir -p $(dir $@)
-$(hide) mkdir -p $(PRIVATE_CLASS_INTERMEDIATES_DIR)
-$(call unzip-jar-files,$(PRIVATE_STATIC_JAVA_LIBRARIES),$(PRIVATE_CLASS_INTERMEDIATES_DIR))
-$(call dump-words-to-file,$(PRIVATE_JAVA_SOURCES),$(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list)
-$(hide) if [ -d "$(PRIVATE_SOURCE_INTERMEDIATES_DIR)" ]; then \
-          find $(PRIVATE_SOURCE_INTERMEDIATES_DIR) -name '*.java' >> $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list; \
-fi
-$(hide) tr ' ' '\n' < $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list \
-    | sort -u > $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq
-$(hide) if [ -s $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq ] ; then \
-    $(1) -encoding UTF-8 \
-    $(strip $(PRIVATE_JAVAC_DEBUG_FLAGS)) \
-    $(if $(findstring true,$(PRIVATE_WARNINGS_ENABLE)),$(xlint_unchecked),) \
-    $(2) \
-    $(addprefix -classpath ,$(strip \
-        $(call normalize-path-list,$(PRIVATE_ALL_JAVA_LIBRARIES)))) \
-    $(if $(findstring true,$(PRIVATE_WARNINGS_ENABLE)),$(xlint_unchecked),) \
-    -extdirs "" -d $(PRIVATE_CLASS_INTERMEDIATES_DIR) \
-    $(PRIVATE_JAVACFLAGS) \
-    \@$(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq \
-    2>$(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr \
-    && ( [ -s $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr ] && \
-    echo -e ${CL_YLW}"`cat $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr`"${CL_RST} 1>&2; \
-    rm -f $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr ) \
-    || ( [ -s $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr ] && \
-    echo -e ${CL_RED}"`cat $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr`"${CL_RST} 1>&2; \
-    rm -rf $(PRIVATE_CLASS_INTERMEDIATES_DIR); exit 41 ) \
-fi
-$(if $(PRIVATE_JAVA_LAYERS_FILE), $(hide) build/tools/java-layers.py \
-    $(PRIVATE_JAVA_LAYERS_FILE) \@$(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq,)
-$(hide) rm -f $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list
-$(hide) rm -f $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq
-$(if $(PRIVATE_JAR_EXCLUDE_FILES), $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DIR) \
-    -name $(word 1, $(PRIVATE_JAR_EXCLUDE_FILES)) \
-    $(addprefix -o -name , $(wordlist 2, 999, $(PRIVATE_JAR_EXCLUDE_FILES))) \
-    | xargs rm -rf)
-$(if $(PRIVATE_JAR_PACKAGES), \
-    $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DIR) -mindepth 1 -type f \
-        $(foreach pkg, $(PRIVATE_JAR_PACKAGES), \
-            -not -path $(PRIVATE_CLASS_INTERMEDIATES_DIR)/$(subst .,/,$(pkg))/\*) -delete ; \
-        find $(PRIVATE_CLASS_INTERMEDIATES_DIR) -empty -delete)
-$(if $(PRIVATE_JAR_EXCLUDE_PACKAGES), $(hide) rm -rf \
-    $(foreach pkg, $(PRIVATE_JAR_EXCLUDE_PACKAGES), \
-        $(PRIVATE_CLASS_INTERMEDIATES_DIR)/$(subst .,/,$(pkg))))
-$(if $(PRIVATE_RMTYPEDEFS), $(hide) $(RMTYPEDEFS) -v $(PRIVATE_CLASS_INTERMEDIATES_DIR))
-$(if $(PRIVATE_JAR_MANIFEST), \
-    $(hide) sed -e 's/%BUILD_NUMBER%/$(BUILD_NUMBER)/' \
-            $(PRIVATE_JAR_MANIFEST) > $(dir $@)/manifest.mf && \
-        jar -cfm $@ $(dir $@)/manifest.mf \
-            -C $(PRIVATE_CLASS_INTERMEDIATES_DIR) ., \
-    $(hide) jar -cf $@ -C $(PRIVATE_CLASS_INTERMEDIATES_DIR) .)
-endef
-
-define transform-java-to-classes.jar
-@echo -e ${CL_GRN}"target Java:"${CL_RST}" $(PRIVATE_MODULE) ($(PRIVATE_CLASS_INTERMEDIATES_DIR))"
-$(call compile-java,$(TARGET_JAVAC),$(PRIVATE_BOOTCLASSPATH))
-endef
-
-# Override the above definitions if we want to do incremetal javac
-ifeq (true, $(ENABLE_INCREMENTALJAVAC))
-define compile-java
-$(hide) mkdir -p $(dir $@)
-$(hide) mkdir -p $(PRIVATE_CLASS_INTERMEDIATES_DIR)
-$(hide) touch $(PRIVATE_CLASS_INTERMEDIATES_DIR)/newstamp
-$(call unzip-jar-files,$(PRIVATE_STATIC_JAVA_LIBRARIES),$(PRIVATE_CLASS_INTERMEDIATES_DIR))
-$(hide) if [ -e $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stamp ] ; then \
-        newerFlag=$$(echo -n "-newer $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stamp") ; \
-    fi ; \
-    find $(PRIVATE_JAVA_SOURCES) $$newerFlag > $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list ; \
-    if [ -d "$(PRIVATE_SOURCE_INTERMEDIATES_DIR)" ]; then \
-        find $(PRIVATE_SOURCE_INTERMEDIATES_DIR) -name '*.java' $$newerFlag >> $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list; \
-    fi
-$(hide) tr ' ' '\n' < $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list \
-    | sort -u > $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq
-@echo -e ${CL_YLW}"(Incremental) build source files:"${CL_RST}""
-@cat $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq
-$(hide) if [ -s $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq ] ; then \
-    $(1) -encoding UTF-8 \
-    $(strip $(PRIVATE_JAVAC_DEBUG_FLAGS)) \
-    $(if $(findstring true,$(PRIVATE_WARNINGS_ENABLE)),$(xlint_unchecked),) \
-    $(2) \
-    $(addprefix -classpath ,$(strip \
-        $(call normalize-path-list,$(PRIVATE_ALL_JAVA_LIBRARIES) $(PRIVATE_CLASS_INTERMEDIATES_DIR)))) \
-    $(if $(findstring true,$(PRIVATE_WARNINGS_ENABLE)),$(xlint_unchecked),) \
-    -extdirs "" -d $(PRIVATE_CLASS_INTERMEDIATES_DIR) \
-    $(PRIVATE_JAVACFLAGS) \
-    \@$(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq \
-    2>$(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr \
-    && ( [ -s $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr ] && \
-    echo -e ${CL_YLW}"`cat $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr`"${CL_RST} 1>&2; \
-    rm -f $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr ) \
-    || ( [ -s $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr ] && \
-    echo -e ${CL_RED}"`cat $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stderr`"${CL_RST} 1>&2; \
-    rm -f $(PRIVATE_CLASS_INTERMEDIATES_DIR)/srderr; exit 41 ) \
-fi
-$(hide) rm -f $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list
-$(hide) rm -f $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq
-$(hide) rm -f $@
-$(if $(PRIVATE_JAR_EXCLUDE_FILES), $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DIR) \
-    -name $(word 1, $(PRIVATE_JAR_EXCLUDE_FILES)) \
-    $(addprefix -o -name , $(wordlist 2, 999, $(PRIVATE_JAR_EXCLUDE_FILES))) \
-    | xargs rm -rf)
-$(if $(PRIVATE_JAR_PACKAGES), \
-    $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DIR) -mindepth 1 -type f \
-        $(foreach pkg, $(PRIVATE_JAR_PACKAGES), \
-            -not -path $(PRIVATE_CLASS_INTERMEDIATES_DIR)/$(subst .,/,$(pkg))/\*) -delete ; \
-        find $(PRIVATE_CLASS_INTERMEDIATES_DIR) -empty -delete)
-$(if $(PRIVATE_JAR_EXCLUDE_PACKAGES), $(hide) rm -rf \
-    $(foreach pkg, $(PRIVATE_JAR_EXCLUDE_PACKAGES), \
-        $(PRIVATE_CLASS_INTERMEDIATES_DIR)/$(subst .,/,$(pkg))))
-$(if $(PRIVATE_RMTYPEDEFS), $(hide) $(RMTYPEDEFS) -v $(PRIVATE_CLASS_INTERMEDIATES_DIR))
-$(if $(PRIVATE_JAR_MANIFEST), \
-    $(hide) sed -e 's/%BUILD_NUMBER%/$(BUILD_NUMBER)/' \
-            $(PRIVATE_JAR_MANIFEST) > $(dir $@)/manifest.mf && \
-        jar -cfm $@ $(dir $@)/manifest.mf \
-            -C $(PRIVATE_CLASS_INTERMEDIATES_DIR) ., \
-    $(hide) jar -cf $@ -C $(PRIVATE_CLASS_INTERMEDIATES_DIR) .)
-$(hide) mv $(PRIVATE_CLASS_INTERMEDIATES_DIR)/newstamp $(PRIVATE_CLASS_INTERMEDIATES_DIR)/stamp
-endef
-
-define transform-java-to-classes.jar
-@echo -e ${CL_GRN}"target Java:"${CL_RST}" $(PRIVATE_MODULE) ($(PRIVATE_CLASS_INTERMEDIATES_DIR))"
-$(call compile-java,$(TARGET_JAVAC),$(PRIVATE_BOOTCLASSPATH))
-endef
-endif # ENABLE_INCREMENTALJAVAC
-
-define transform-classes.jar-to-emma
-$(hide) java -classpath $(EMMA_JAR) emma instr -outmode fullcopy -outfile \
-    $(PRIVATE_EMMA_COVERAGE_FILE) -ip $< -d $(PRIVATE_EMMA_INTERMEDIATES_DIR) \
-    $(addprefix -ix , $(PRIVATE_EMMA_COVERAGE_FILTER))
 endef
 
 #TODO: use a smaller -Xmx value for most libraries;
@@ -1794,37 +1430,6 @@ define add-dex-to-package
 $(hide) zip -0qj $@ $(dir $(PRIVATE_DEX_FILE))classes*.dex
 endef
 
-# Add java resources added by the current module.
-#
-define add-java-resources-to-package
-$(call dump-words-to-file, $(PRIVATE_EXTRA_JAR_ARGS), $(dir $@)jar-arg-list)
-$(hide) jar uf $@ @$(dir $@)jar-arg-list
-@rm -f $(dir $@)jar-arg-list
-endef
-
-# Add java resources carried by static Java libraries.
-#
-define add-carried-java-resources
-$(hide) if [ -d $(PRIVATE_CLASS_INTERMEDIATES_DIR) ] ; then \
-    java_res_jar_flags=$$(find $(PRIVATE_CLASS_INTERMEDIATES_DIR) -type f -a -not -name "*.class" \
-        | sed -e "s?^$(PRIVATE_CLASS_INTERMEDIATES_DIR)/? -C $(PRIVATE_CLASS_INTERMEDIATES_DIR) ?"); \
-    if [ -n "$$java_res_jar_flags" ] ; then \
-        echo $$java_res_jar_flags >$(dir $@)java_res_jar_flags; \
-        jar uf $@ $$java_res_jar_flags; \
-    fi; \
-fi
-endef
-
-# Sign a package using the specified key/cert.
-#
-define sign-package
-$(hide) mv $@ $@.unsigned
-$(hide) java -jar $(SIGNAPK_JAR) \
-    $(PRIVATE_CERTIFICATE) $(PRIVATE_PRIVATE_KEY) \
-    $(PRIVATE_ADDITIONAL_CERTIFICATES) $@.unsigned $@.signed
-$(hide) mv $@.signed $@
-endef
-
 # Align STORED entries of a package on 4-byte boundaries
 # to make them easier to mmap.
 #
@@ -1845,18 +1450,6 @@ $(hide) if [ -f "$(PRIVATE_INTERMEDIATES_DIR)/classes.lst" ]; then \
 	    $(ACP) $(PRIVATE_INTERMEDIATES_DIR)/classes.lst \
 		$(TOP)/dalvik/DEBUG-FILES/$(PRIVATE_MODULE).lst; \
 	fi
-endef
-
-# TODO(joeo): If we can ever upgrade to post 3.81 make and get the
-# new prebuilt rules to work, we should change this to copy the
-# resources to the out directory and then copy the resources.
-
-# Note: we intentionally don't clean PRIVATE_CLASS_INTERMEDIATES_DIR
-# in transform-java-to-classes for the sake of vm-tests.
-define transform-host-java-to-package
-@echo -e ${CL_YLW}"host Java:"${CL_RST}" $(PRIVATE_MODULE) ($(PRIVATE_CLASS_INTERMEDIATES_DIR))"
-$(call compile-java,$(HOST_JAVAC),$(PRIVATE_BOOTCLASSPATH))
-$(if $(PRIVATE_EXTRA_JAR_ARGS), $(call add-java-resources-to-package))
 endef
 
 ###########################################################
@@ -2221,7 +1814,7 @@ define _import-node
 endef
 
 KERNEL_HEADERS_INSTALL := $(KERNEL_OUT)/usr
-KERNEL_MODULES_OUT := $(OUT_DIR)/system/lib/modules
+KERNEL_MODULES_OUT := $(OUT_DIR)/$(RENDER_PRODUCT)/system/lib/modules
 
 define mv-modules
 				mkdir -p $(KERNEL_MODULES_OUT);\

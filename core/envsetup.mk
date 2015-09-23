@@ -1,13 +1,3 @@
-# Variables we check:
-#     HOST_BUILD_TYPE = { release debug }
-#     TARGET_BUILD_TYPE = { release debug }
-# and we output a bunch of variables, see the case statement at
-# the bottom for the full list
-#     OUT_DIR is also set to "out" if it's not already set.
-#         this allows you to set it to somewhere else if you like
-
-# Set up version information.
-include $(BUILD_SYSTEM)/version_defaults.mk
 
 # ---------------------------------------------------------------
 # If you update the build system such that the environment setup
@@ -219,7 +209,6 @@ BUILD_OUT_EXECUTABLES := $(BUILD_OUT)/bin
 
 HOST_OUT_EXECUTABLES := $(HOST_OUT)/bin
 HOST_OUT_SHARED_LIBRARIES := $(HOST_OUT)/lib64
-HOST_OUT_JAVA_LIBRARIES := $(HOST_OUT)/framework
 HOST_OUT_SDK_ADDON := $(HOST_OUT)/sdk_addon
 
 HOST_OUT_INTERMEDIATES := $(HOST_OUT)/obj
@@ -266,7 +255,6 @@ TARGET_OUT_SHARED_LIBRARIES := $(TARGET_OUT)/lib64
 else
 TARGET_OUT_SHARED_LIBRARIES := $(TARGET_OUT)/lib
 endif
-TARGET_OUT_JAVA_LIBRARIES := $(TARGET_OUT)/framework
 TARGET_OUT_APPS := $(TARGET_OUT)/app
 TARGET_OUT_APPS_PRIVILEGED := $(TARGET_OUT)/priv-app
 TARGET_OUT_KEYLAYOUT := $(TARGET_OUT)/usr/keylayout
@@ -288,7 +276,6 @@ $(TARGET_2ND_ARCH_VAR_PREFIX)TARGET_OUT_APPS_PRIVILEGED := $(TARGET_OUT_APPS_PRI
 TARGET_OUT_DATA := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_DATA)
 TARGET_OUT_DATA_EXECUTABLES := $(TARGET_OUT_EXECUTABLES)
 TARGET_OUT_DATA_SHARED_LIBRARIES := $(TARGET_OUT_SHARED_LIBRARIES)
-TARGET_OUT_DATA_JAVA_LIBRARIES := $(TARGET_OUT_DATA)/framework
 TARGET_OUT_DATA_APPS := $(TARGET_OUT_DATA)/app
 TARGET_OUT_DATA_KEYLAYOUT := $(TARGET_OUT_KEYLAYOUT)
 TARGET_OUT_DATA_KEYCHARS := $(TARGET_OUT_KEYCHARS)
@@ -315,7 +302,6 @@ TARGET_OUT_VENDOR_SHARED_LIBRARIES := $(TARGET_OUT_VENDOR)/lib64
 else
 TARGET_OUT_VENDOR_SHARED_LIBRARIES := $(TARGET_OUT_VENDOR)/lib
 endif
-TARGET_OUT_VENDOR_JAVA_LIBRARIES := $(TARGET_OUT_VENDOR)/framework
 TARGET_OUT_VENDOR_APPS := $(TARGET_OUT_VENDOR)/app
 TARGET_OUT_VENDOR_ETC := $(TARGET_OUT_VENDOR)/etc
 
