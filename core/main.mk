@@ -3,8 +3,6 @@ kernel:
 	@echo "\033[32m Starting build \033[0m"
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) $(PRODUCT_DEFCONFIG) > /dev/null
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE)
-	$(mv-modules)
-	@cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)
 
 .PHONY: kernelclean
 kernelclean:
@@ -18,7 +16,9 @@ kernelclobber: kernelclean
 
 .PHONY: buildzip
 buildzip:
+	$(mv-modules)
 	$(cp-zip-files)
+	$(if $(TARGET_REQUIRES_DTB), $(make_dtb))
 	$(build-zip)
 
 .PHONY: render

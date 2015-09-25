@@ -1817,19 +1817,24 @@ KERNEL_HEADERS_INSTALL := $(KERNEL_OUT)/usr
 KERNEL_MODULES_OUT := $(OUT_DIR)/$(RENDER_PRODUCT)/system/lib/modules
 
 define mv-modules
-				mkdir -p $(KERNEL_MODULES_OUT);\
-        ko=`find $(PRODUCT_KERNEL_SOURCE) -type f -name *.ko`;\
-        for i in $$ko; do mv $$i $(KERNEL_MODULES_OUT)/; done;\
-    fi
+mkdir -p $(KERNEL_MODULES_OUT);\
+ko=`find $(PRODUCT_KERNEL_SOURCE) -type f -name *.ko`;\
+for i in $$ko; do mv $$i $(KERNEL_MODULES_OUT)/; done;\
+fi
 endef
 
 define cp-zip-files
-				cp -r $(ZIP_FILES_DIR)/* $(OUT_DIR)/$(RENDER_PRODUCT);
+cp -r $(ZIP_FILES_DIR)/* $(OUT_DIR)/$(RENDER_PRODUCT);\
+cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/
 endef
 
 define build-zip
-				mkdir -p $(ANDROID_BUILD_TOP)/Zip-Files/$(RENDER_PRODUCT);\
-				cd $(OUT_DIR)/$(RENDER_PRODUCT);\
-				zip -r9 $(ANDROID_BUILD_TOP)/Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) *;\
-				cd $(ANDROID_BUILD_TOP);
+mkdir -p $(ANDROID_BUILD_TOP)/Zip-Files/$(RENDER_PRODUCT);\
+cd $(OUT_DIR)/$(RENDER_PRODUCT);\
+zip -r9 $(ANDROID_BUILD_TOP)/Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) ./*;\
+cd $(ANDROID_BUILD_TOP)
+endef
+
+define make_dtb
+build/tools/dtbToolCM -2 -o $(OUT_DIR)/$(RENDER_PRODUCT)/dtb -s 2048 -p $(PRODUCT_KERNEL_SOURCE)/scripts/dtc/ $(PRODUCT_KERNEL_SOURCE)/arch/arm/boot/
 endef
