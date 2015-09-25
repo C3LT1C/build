@@ -161,11 +161,12 @@ function check_product()
         return
     fi
 
-    if (echo -n $1) ; then
+    if [ $(grep -rl "$1" ./device/*/$(echo -n $1 | sed -e 's/^render_//g')/render.mk) ] ; then
        export RENDER_PRODUCT=$(echo -n $1 | sed -e 's/^render_//g')
        export DEVICE_MAKEFILE=$(grep -rl "$1" ./device/*/$RENDER_PRODUCT/render.mk)
     else
-       RENDER_PRODUCT=
+       echo "Configuration makefile for $1 device not found.. "
+       echo "Calling for room service .. "
     fi
 }
 
@@ -215,12 +216,15 @@ unset f
 export CORE_COUNT=$(cat /proc/cpuinfo | grep "^processor" | wc -l)
 export ANDROID_BUILD_TOP=$(gettop)
 export OUT_DIR=$(get_build_var OUT_DIR)
+echo 'Remember to "lunch" your device'
+echo "Type help for functions and targets"
 function help()
 {
 cat <<EOF
-Currently 2 build targets apply
-kernel - will build source with $CORE_COUNT threads
-kernelclean - cleans source
-kernelclobber - cleans source & removes zImage from $OUT_DIR
+make kernel - will build source with $CORE_COUNT threads
+make kernelclean - cleans source
+make kernelclobber - cleans source & removes zImage from $OUT_DIR
+make buildzip - builds flashable zip file (dependent on a successful make kernel attempt)
+make render - runs make kernel then make buildzip in succession
 EOF
 }

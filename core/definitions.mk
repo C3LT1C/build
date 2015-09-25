@@ -1823,9 +1823,13 @@ define mv-modules
     fi
 endef
 
-define clean-module-folder
-    mdpath=`find $(KERNEL_MODULES_OUT) -type f -name modules.order`;\
-    if [ "$$mdpath" != "" ];then\
-        mpath=`dirname $$mdpath`; rm -rf $$mpath;\
-    fi
+define cp-zip-files
+				cp -r $(ZIP_FILES_DIR)/* $(OUT_DIR)/$(RENDER_PRODUCT);
+endef
+
+define build-zip
+				mkdir -p $(ANDROID_BUILD_TOP)/Zip-Files/$(RENDER_PRODUCT);\
+				cd $(OUT_DIR)/$(RENDER_PRODUCT);\
+				zip -r9 $(ANDROID_BUILD_TOP)/Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) *;\
+				cd $(ANDROID_BUILD_TOP);
 endef

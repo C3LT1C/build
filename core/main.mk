@@ -16,6 +16,14 @@ kernelclobber: kernelclean
 	@echo "\033[32m Full cleaning \033[0m"
 	$(shell rm -rf $(OUT_DIR)/*)
 
+.PHONY: buildzip
+buildzip:
+	$(cp-zip-files)
+	$(build-zip)
+
+.PHONY: render
+render:	kernel buildzip
+
 BUILD_SYSTEM := $(TOPDIR)build/core
 
 ifneq ($(dont_bother),true)
