@@ -95,6 +95,7 @@ function lunch()
     fi
 
     local product=$(echo -n $selection | sed -e "s/-.*$//")
+    unset DEVICE_MAKEFILE
     check_product $product
     if [ ! $DEVICE_MAKEFILE ]
     then
