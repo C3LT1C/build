@@ -1831,13 +1831,17 @@ endef
 
 define cp-zip-files
 cp -r $(ZIP_FILES_DIR)/* $(OUT_DIR)/$(RENDER_PRODUCT);\
-cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/
+cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/;\
+echo "\033[32m Zipping the following files:\033[0m";\
+ziprepacks=`find $(OUT_DIR)/$(RENDER_PRODUCT) -type f`;\
+for i in $$ziprepacks; do echo "\033[32m $$i \033[0m"; done;\
+fi
 endef
 
 define build-zip
 mkdir -p $(ANDROID_BUILD_TOP)/Zip-Files/$(RENDER_PRODUCT);\
 cd $(OUT_DIR)/$(RENDER_PRODUCT);\
-zip -r9 $(ANDROID_BUILD_TOP)/Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) ./*;\
+zip -qr9 $(ANDROID_BUILD_TOP)/Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) ./*;\
 cd $(ANDROID_BUILD_TOP)
 endef
 

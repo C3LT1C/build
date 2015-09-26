@@ -9,7 +9,7 @@ kernel:
 kernelclean:
 	@echo "\033[32m Cleaning source \033[0m"
 	make -C $(PRODUCT_KERNEL_SOURCE) mrproper > /dev/null
-	@echo "Clearing device OUT dir . . . $(OUT_DIR)/$(RENDER_PRODUCT)"
+	@echo "Clearing device repacking dir: $(OUT_DIR)/$(RENDER_PRODUCT)"
 	$(shell rm -rf $(OUT_DIR)/$(RENDER_PRODUCT)/*)
 
 .PHONY: kernelclobber
@@ -26,6 +26,11 @@ buildzip:
 
 .PHONY: render
 render:	kernel buildzip
+	$(hide) md5sum ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) | sed 's\./Zip-Files/$(RENDER_PRODUCT)/\\' > ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME).md5
+	@echo
+	@echo "=-=-=-= Complete =-=-=-="
+	@echo "\033[32m ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) built successful\033[0m"
+	@echo "md5: `cat ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME).md5 | cut -d ' ' -f 1`"
 
 BUILD_SYSTEM := $(TOPDIR)build/core
 
