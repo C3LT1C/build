@@ -24,13 +24,16 @@ buildzip:
 	$(if $(TARGET_REQUIRES_DTB), $(make_dtb))
 	$(build-zip)
 
-.PHONY: render
-render:	kernel buildzip
+.PHONY: printcompletion
+printcompletion:
 	$(hide) md5sum ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) | sed 's\./Zip-Files/$(RENDER_PRODUCT)/\\' > ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME).md5
 	@echo
 	@echo "=-=-=-= Complete =-=-=-="
 	@echo "\033[32m ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) built successful\033[0m"
 	@echo "md5: `cat ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME).md5 | cut -d ' ' -f 1`"
+
+.PHONY: render
+render:	kernel buildzip printcompletion
 
 BUILD_SYSTEM := $(TOPDIR)build/core
 
