@@ -1,6 +1,7 @@
 .PHONY: kernel
 kernel:
 	@echo "\033[32m Starting build \033[0m"
+	$(if $(TARGET_REQUIRES_DTB), $(clear-dtb))
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) $(PRODUCT_DEFCONFIG) > /dev/null
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE)
 
@@ -8,6 +9,8 @@ kernel:
 kernelclean:
 	@echo "\033[32m Cleaning source \033[0m"
 	make -C $(PRODUCT_KERNEL_SOURCE) mrproper > /dev/null
+	@echo "Clearing device OUT dir . . . $(OUT_DIR)/$(RENDER_PRODUCT)"
+	$(shell rm -rf $(OUT_DIR)/$(RENDER_PRODUCT)/*)
 
 .PHONY: kernelclobber
 kernelclobber: kernelclean

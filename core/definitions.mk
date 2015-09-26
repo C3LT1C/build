@@ -1823,6 +1823,12 @@ for i in $$ko; do mv $$i $(KERNEL_MODULES_OUT)/; done;\
 fi
 endef
 
+define clear-dtb
+dtb=`find $(PRODUCT_KERNEL_SOURCE) -type f -name *.dtb*`;\
+for i in $$dtb; do rm $$i; done;\
+fi
+endef
+
 define cp-zip-files
 cp -r $(ZIP_FILES_DIR)/* $(OUT_DIR)/$(RENDER_PRODUCT);\
 cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/
