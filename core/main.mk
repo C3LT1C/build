@@ -29,6 +29,7 @@ buildzip:
 buildbootimg:
 		$(make_ramdisk)
 		$(make_boot)
+		$(clear_boot-ramdisk)
 
 .PHONY: printcompletion
 printcompletion:
@@ -38,8 +39,22 @@ printcompletion:
 	@echo "\033[32m ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) built successful\033[0m"
 	@echo "md5: `cat ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME).md5 | cut -d ' ' -f 1`"
 
+build_type := $(filter kernel anykernel bootimg,$(TARGET_BUILD_VARIANT))
+ifeq ($(build_type),anykernel)
 .PHONY: render
 render:	kernel buildzip printcompletion
+endif
+ifeq ($(build_type),bootimg)
+.PHONY: render
+render:	kernel buildbootimg buildzip printcompletion
+endif
+ifeq ($(build_type),kernel)
+.PHONY: render
+render:	kernel
+	@echo
+	@echo "=-=-=-= Complete =-=-=-="
+	@echo "\033[32m $(OUT_DIR)/$(RENDER_PRODUCT)/zImage built successful\033[0m"
+endif
 
 BUILD_SYSTEM := $(TOPDIR)build/core
 
