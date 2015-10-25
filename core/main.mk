@@ -4,6 +4,7 @@ kernel:
 	$(if $(TARGET_REQUIRES_DTB), $(clear-dtb))
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) $(PRODUCT_DEFCONFIG) > /dev/null
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE)
+	$(cp-zimage)
 
 .PHONY: kernelclean
 kernelclean:
@@ -23,6 +24,11 @@ buildzip:
 	$(cp-zip-files)
 	$(if $(TARGET_REQUIRES_DTB), $(make_dtb))
 	$(build-zip)
+
+.PHONY: buildbootimg
+buildbootimg:
+		$(make_ramdisk)
+		$(make_boot)
 
 .PHONY: printcompletion
 printcompletion:

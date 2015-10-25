@@ -1829,9 +1829,13 @@ for i in $$dtb; do rm $$i; done;\
 fi
 endef
 
+define cp-zimage
+mkdir -p $(OUT_DIR)/$(RENDER_PRODUCT);\
+cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/zImage
+endef
+
 define cp-zip-files
 cp -r $(ZIP_FILES_DIR)/* $(OUT_DIR)/$(RENDER_PRODUCT);\
-cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/;\
 echo "\033[32m Zipping the following files:\033[0m";\
 ziprepacks=`find $(OUT_DIR)/$(RENDER_PRODUCT) -type f`;\
 for i in $$ziprepacks; do echo "\033[32m $$i \033[0m"; done;\
@@ -1847,4 +1851,17 @@ endef
 
 define make_dtb
 build/tools/dtbToolCM -2 -o $(OUT_DIR)/$(RENDER_PRODUCT)/dtb -s 2048 -p $(PRODUCT_KERNEL_SOURCE)/scripts/dtc/ $(PRODUCT_KERNEL_SOURCE)/arch/arm/boot/
+endef
+
+define make_ramdisk
+build/tools/mkbootfs $(BOARD_RAMDISK_DIR) | gzip > $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz
+endef
+
+define make_boot
+build/tools/mkbootimg --kernel $(OUT_DIR)/$(RENDER_PRODUCT)/zImage --ramdisk $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz --base $(BOARD_KERNEL_BASE) --cmdline "$(BOARD_KERNEL_CMDLINE)" --output $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img
+endef
+
+define clear_boot-ramdisk
+rm $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz;\
+rm $(OUT_DIR)/$(RENDER_PRODUCT)/zImage
 endef
