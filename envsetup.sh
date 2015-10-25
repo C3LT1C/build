@@ -139,7 +139,7 @@ function lunch()
     printconfig
 }
 
-VARIANT_CHOICES=(kernel anykernel)
+VARIANT_CHOICES=(kernel anykernel bootimg)
 
 # check to see if the supplied variant is valid
 function check_variant()

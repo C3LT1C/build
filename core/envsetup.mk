@@ -128,7 +128,7 @@ TARGET_COPY_OUT_VENDOR := $(_vendor_path_placeholder)
 # variables that we need in order to locate the output files.
 include $(BUILD_SYSTEM)/product_config.mk
 
-build_variant := $(filter-out eng user userdebug kernel,$(TARGET_BUILD_VARIANT))
+build_variant := $(filter-out eng user userdebug kernel anykernel bootimg,$(TARGET_BUILD_VARIANT))
 ifneq ($(build_variant)-$(words $(TARGET_BUILD_VARIANT)),-1)
 $(warning bad TARGET_BUILD_VARIANT: $(TARGET_BUILD_VARIANT))
 $(error must be empty or one of: eng user userdebug kernel)
