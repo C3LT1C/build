@@ -21,8 +21,8 @@ kernelclobber: kernelclean
 .PHONY: buildzip
 buildzip:
 	$(mv-modules)
-	$(cp-zip-files)
 	$(if $(TARGET_REQUIRES_DTB), $(make_dtb))
+	$(cp-zip-files)
 	$(build-zip)
 
 .PHONY: buildbootimg
