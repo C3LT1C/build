@@ -1850,7 +1850,7 @@ cd $(ANDROID_BUILD_TOP)
 endef
 
 define make_dtb
-build/tools/dtbToolCM -2 -o $(OUT_DIR)/$(RENDER_PRODUCT)/dtb -s 2048 -p $(PRODUCT_KERNEL_SOURCE)/scripts/dtc/ $(PRODUCT_KERNEL_SOURCE)/arch/$(ARCH)/boot/
+build/tools/dtbToolCM -2 -o $(OUT_DIR)/$(RENDER_PRODUCT)/dtb -s 2048 -p $(PRODUCT_KERNEL_SOURCE)/scripts/dtc/ $(PRODUCT_KERNEL_SOURCE)/$(DTB_DIR)/
 endef
 
 define make_ramdisk
