@@ -97,6 +97,12 @@ OUT_DIR := $(OUT_DIR_COMMON_BASE)/$(notdir $(PWD))
 endif
 endif
 
+ifneq ($(TARGET_REQUIRES_DTB),)
+ifeq ($(DTB_DIR),)
+DTB_DIR := arch/arm/boot
+endif
+endif
+
 ifeq ($(ARCH),arm64)
 ifeq ($(build_type),bootimg)
 	TARGET_ZIMAGE := Image.gz
