@@ -1831,7 +1831,7 @@ endef
 
 define cp-zimage
 mkdir -p $(OUT_DIR)/$(RENDER_PRODUCT);\
-cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/zImage
+cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE)
 endef
 
 define cp-zip-files
@@ -1850,7 +1850,7 @@ cd $(ANDROID_BUILD_TOP)
 endef
 
 define make_dtb
-build/tools/dtbToolCM -2 -o $(OUT_DIR)/$(RENDER_PRODUCT)/dtb -s 2048 -p $(PRODUCT_KERNEL_SOURCE)/scripts/dtc/ $(PRODUCT_KERNEL_SOURCE)/arch/arm/boot/
+build/tools/dtbToolCM -2 -o $(OUT_DIR)/$(RENDER_PRODUCT)/dtb -s 2048 -p $(PRODUCT_KERNEL_SOURCE)/scripts/dtc/ $(PRODUCT_KERNEL_SOURCE)/arch/$(ARCH)/boot/
 endef
 
 define make_ramdisk
