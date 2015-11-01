@@ -97,6 +97,10 @@ OUT_DIR := $(OUT_DIR_COMMON_BASE)/$(notdir $(PWD))
 endif
 endif
 
+ifeq ($(ARM),)
+ARM := arm
+endif
+
 ifneq ($(TARGET_REQUIRES_DTB),)
 ifeq ($(DTB_DIR),)
 DTB_DIR := arch/arm/boot
