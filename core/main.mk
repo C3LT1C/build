@@ -105,3 +105,5 @@ endif
 else
 	TARGET_ZIMAGE := zImage
 endif
+
+ ZIMAGE := arch/$(ARCH)/boot/$(TARGET_ZIMAGE)
