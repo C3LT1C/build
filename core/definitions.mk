@@ -1829,6 +1829,12 @@ for i in $$dtb; do rm $$i; done;\
 fi
 endef
 
+define clear-all-sources
+src=`grep -r 'path="kernel/' ./.repo/local_manifests/* | sed 's/.*path="//' | sed 's/" remote=".*//'`;\
+for a in $$src; do make -C $$a mrproper; done;\
+fi
+endef
+
 define cp-zimage
 mkdir -p $(OUT_DIR)/$(RENDER_PRODUCT);\
 cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE)

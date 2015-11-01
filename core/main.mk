@@ -15,9 +15,10 @@ kernelclean:
 	$(shell rm -rf $(OUT_DIR)/$(RENDER_PRODUCT)/*)
 
 .PHONY: kernelclobber
-kernelclobber: kernelclean
-	@echo "\033[32m Full cleaning \033[0m"
+kernelclobber:
+	$(clear-all-sources)
 	$(shell rm -rf $(OUT_DIR)/*)
+	@echo "\033[32m Full cleaning complete \033[0m"
 
 .PHONY: buildzip
 buildzip:
