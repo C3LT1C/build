@@ -97,7 +97,11 @@ endif
 endif
 
 ifeq ($(ARCH),arm64)
+ifeq ($(build_type),bootimg)
 	TARGET_ZIMAGE := Image.gz
+else
+	TARGET_ZIMAGE := Image
+endif
 else
 	TARGET_ZIMAGE := zImage
 endif
