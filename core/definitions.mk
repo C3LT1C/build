@@ -1844,6 +1844,59 @@ ifeq ($(ARCH),)
 ARCH := arm
 endif
 
+ifneq ($(TARGET_REQUIRES_DTB),)
+ifeq ($(DTB_DIR),)
+DTB_DIR := arch/arm/boot
+endif
+endif
+
+ifeq ($(ARCH),arm64)
+ifeq ($(build_type),bootimg)
+	TARGET_ZIMAGE := Image.gz
+else
+	TARGET_ZIMAGE := Image
+endif
+else
+	TARGET_ZIMAGE := zImage
+endif
+
+ZIMAGE := arch/$(ARCH)/boot/$(TARGET_ZIMAGE)
+
+ifneq ($(dont_bother),true)
+subdir_makefiles := \
+		$(shell build/tools/findleaves.py --prune=.repo --prune=.git $(PWD) Android.mk)
+$(foreach mk, $(subdir_makefiles), $(eval include $(mk)))
+endif
+
+# Figure out where we are.
+define my-dir
+$(strip \
+  $(eval LOCAL_MODULE_MAKEFILE := $$(lastword $$(MAKEFILE_LIST))) \
+  $(if $(filter $(BUILD_SYSTEM)/% $(OUT_DIR)/%,$(LOCAL_MODULE_MAKEFILE)), \
+    $(error my-dir must be called before including any other makefile.) \
+   , \
+    $(patsubst %/,%,$(dir $(LOCAL_MODULE_MAKEFILE))) \
+   ) \
+ )
+endef
+
+
+
+# ---------------------------------------------------------------
+# figure out the output directories
+
+ifeq (,$(strip $(OUT_DIR)))
+ifeq (,$(strip $(OUT_DIR_COMMON_BASE)))
+ifneq ($(TOPDIR),)
+OUT_DIR := $(TOPDIR)out
+else
+OUT_DIR := $(CURDIR)/out
+endif
+else
+OUT_DIR := $(OUT_DIR_COMMON_BASE)/$(notdir $(PWD))
+endif
+endif
+
 define mv-modules
 mkdir -p $(KERNEL_MODULES_OUT);\
 ko=`find $(PRODUCT_KERNEL_SOURCE) -type f -name *.ko`;\
