@@ -1816,6 +1816,34 @@ endef
 KERNEL_HEADERS_INSTALL := $(KERNEL_OUT)/usr
 KERNEL_MODULES_OUT := $(OUT_DIR)/$(RENDER_PRODUCT)/system/lib/modules
 
+MKBOOTIMG_ARGS := --kernel $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE) --ramdisk $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz
+ifneq ($(BOARD_2ND_BOOTLOADER_FILE),)
+$(MKBOOTIMG_ARGS) += $(BOARD_2ND_BOOTLOADER_FILE)
+endif
+$(MKBOOTIMG_ARGS) += --cmdline "$(BOARD_KERNEL_CMDLINE)"
+ifneq ($(BOARD_NAME),)
+$(MKBOOTIMG_ARGS) += --board "$(BOARD_NAME)"
+endif
+$(MKBOOTIMG_ARGS) += --base $(BOARD_KERNEL_BASE)
+$(MKBOOTIMG_ARGS) += --pagesize $(BOARD_KERNEL_PAGESIZE)
+$(MKBOOTIMG_ARGS) += --kernel_offset $(BOARD_KERNEL_OFFSET)
+ifneq ($(BOARD_KERNEL_RAMDISK_OFFSET),)
+$(MKBOOTIMG_ARGS) += --ramdisk_offset $(BOARD_KERNEL_RAMDISK_OFFSET)
+ifneq ($(BOARD_KERNEL_RAMDISK_2NDOFFSET),)
+$(MKBOOTIMG_ARGS) += $(BOARD_KERNEL_RAMDISK_2NDOFFSET)
+endif
+endif
+ifneq ($(BOARD_KERNEL_RAMDISK_OFFSET),)
+$(MKBOOTIMG_ARGS) += --tags_offset $(BOARD_KERNEL_RAMDISK_OFFSET)
+endif
+ifeq ($(TARGET_REQUIRES_DTB),true)
+$(MKBOOTIMG_ARGS) += $(OUT_DIR)/$(RENDER_PRODUCT)/dtb
+endif
+
+ifeq ($(ARCH),)
+ARCH := arm
+endif
+
 define mv-modules
 mkdir -p $(KERNEL_MODULES_OUT);\
 ko=`find $(PRODUCT_KERNEL_SOURCE) -type f -name *.ko`;\
@@ -1864,10 +1892,10 @@ build/tools/mkbootfs $(BOARD_RAMDISK_DIR) | gzip > $(OUT_DIR)/$(RENDER_PRODUCT)/
 endef
 
 define make_boot
-build/tools/mkbootimg --kernel $(OUT_DIR)/$(RENDER_PRODUCT)/zImage --ramdisk $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz --base $(BOARD_KERNEL_BASE) --cmdline "$(BOARD_KERNEL_CMDLINE)" --output $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img
+build/tools/mkbootimg $(MKBOOTIMG_ARGS) --output $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img
 endef
 
 define clear_boot-ramdisk
 rm $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz;\
-rm $(OUT_DIR)/$(RENDER_PRODUCT)/zImage
+rm $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE)
 endef

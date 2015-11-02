@@ -53,6 +53,7 @@ buildzip:
 buildbootimg:
 		$(make_ramdisk)
 		$(make_boot)
+		$(if $(TARGET_REQUIRES_DTB), $(clear-dtb))
 		$(clear_boot-ramdisk)
 
 .PHONY: printcompletion
