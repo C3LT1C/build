@@ -193,6 +193,39 @@ function printconfig()
     get_build_var report_config
 }
 
+function get_make_command()
+{
+  echo command make
+}
+
+function make()
+{
+    local start_time=$(date +"%s")
+    $(get_make_command) "$@"
+    local ret=$?
+    local end_time=$(date +"%s")
+    local tdiff=$(($end_time-$start_time))
+    local hours=$(($tdiff / 3600 ))
+    local mins=$((($tdiff % 3600) / 60))
+    local secs=$(($tdiff % 60))
+    echo
+	if [ $ret -eq 0 ] ; then
+		echo -n -e "#### \033[32mMake completed successfully\033[0m "
+	else
+		echo -n -e "#### \033[31mMake failed to build some targets\033[0m "
+	fi
+    if [ $hours -gt 0 ] ; then
+        printf "(%02g:%02g:%02g (hh:mm:ss))" $hours $mins $secs
+    elif [ $mins -gt 0 ] ; then
+        printf "(%02g:%02g (mm:ss))" $mins $secs
+    elif [ $secs -gt 0 ] ; then
+        printf "(%s seconds)" $secs
+    fi
+    echo -e " ####"
+    echo
+    return $ret
+}
+
 if [ "x$SHELL" != "x/bin/bash" ]; then
     case `ps -o command -p $$` in
         *bash*)

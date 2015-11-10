@@ -1840,28 +1840,6 @@ ifeq ($(TARGET_REQUIRES_DTB),true)
 $(MKBOOTIMG_ARGS) += $(OUT_DIR)/$(RENDER_PRODUCT)/dtb
 endif
 
-ifeq ($(ARCH),)
-ARCH := arm
-endif
-
-ifneq ($(TARGET_REQUIRES_DTB),)
-ifeq ($(DTB_DIR),)
-DTB_DIR := arch/arm/boot
-endif
-endif
-
-ifeq ($(ARCH),arm64)
-ifeq ($(build_type),bootimg)
-	TARGET_ZIMAGE := Image.gz
-else
-	TARGET_ZIMAGE := Image
-endif
-else
-	TARGET_ZIMAGE := zImage
-endif
-
-ZIMAGE := arch/$(ARCH)/boot/$(TARGET_ZIMAGE)
-
 ifneq ($(dont_bother),true)
 subdir_makefiles := \
 		$(shell build/tools/findleaves.py --prune=.repo --prune=.git $(PWD) Android.mk)
@@ -1917,8 +1895,9 @@ fi
 endef
 
 define cp-zimage
+echo "$(target_arch)";\
 mkdir -p $(OUT_DIR)/$(RENDER_PRODUCT);\
-cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE)
+cp $(PRODUCT_KERNEL_SOURCE)/arch/$(ARCH)/boot/$(TARGET_ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE)
 endef
 
 define cp-zip-files

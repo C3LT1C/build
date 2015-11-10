@@ -1,17 +1,20 @@
 BUILD_SYSTEM := $(TOPDIR)build/core
-
 include $(BUILD_SYSTEM)/definitions.mk
 include $(BUILD_SYSTEM)/dumpvar.mk
 include $(BUILD_SYSTEM)/envsetup.mk
 
 .PHONY: kernel
 kernel:
-	@echo "\033[32m Starting build \033[0m"
-	$(if $(TARGET_REQUIRES_DTB), $(clear-dtb))
+	$(info =-=-=-= Starting build =-=-=-=)
+	$(info Target Arch: $(ARCH))
+	$(info Target Source: $(PRODUCT_KERNEL_SOURCE))
+	$(info Target Toolchain: $(CROSS_COMPILE))
+	$(if $(TARGET_REQUIRES_DTB), $(clear-dtb) $(info Building requires DTB: True),)
+	$(info =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=)
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) $(PRODUCT_DEFCONFIG) > /dev/null
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) $(if $(EXTRAVERSION), EXTRAVERSION=$(EXTRAVERSION)) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE)
 	$(cp-zimage)
-	@echo "\033[32m Copied $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) to $(OUT_DIR)/$(RENDER_PRODUCT) \033[0m"
+	@echo "\033[32m Copied $(PRODUCT_KERNEL_SOURCE)/arch/$(ARCH)/boot/$(TARGET_ZIMAGE) to $(OUT_DIR)/$(RENDER_PRODUCT) \033[0m"
 
 .PHONY: kernelclean
 kernelclean:
@@ -44,12 +47,10 @@ buildbootimg:
 printcompletion:
 ifeq ($(build_type),kernel)
 	@echo
-	@echo "=-=-=-= Complete =-=-=-="
-	@echo "\033[32m $(OUT_DIR)/$(RENDER_PRODUCT)/zImage built successful\033[0m"
+	@echo "\033[32m $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE) built successful\033[0m"
 else
 	$(hide) md5sum ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) | sed 's\./Zip-Files/$(RENDER_PRODUCT)/\\' > ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME).md5
 	@echo
-	@echo "=-=-=-= Complete =-=-=-="
 	@echo "\033[32m ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) built successful\033[0m"
 	@echo "md5: `cat ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME).md5 | cut -d ' ' -f 1`"
 endif

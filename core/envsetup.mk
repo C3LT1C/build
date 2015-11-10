@@ -376,3 +376,15 @@ endif
 ifeq ($(PRINT_BUILD_CONFIG),)
 PRINT_BUILD_CONFIG := true
 endif
+
+ifeq (arm64,$(ARCH))
+  TARGET_ZIMAGE := Image
+endif
+
+ifeq (arm,$(ARCH))
+  TARGET_ZIMAGE := zImage
+endif
+
+ifeq ($(DTB_DIR),)
+DTB_DIR := arch/arm/boot
+endif

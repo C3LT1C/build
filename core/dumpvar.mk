@@ -75,6 +75,7 @@ endif # CALLED_FROM_SETUP
 ifneq ($(PRINT_BUILD_CONFIG),)
 HOST_OS_EXTRA:=$(shell python -c "import platform; print(platform.platform())")
 $(info =======================)
+$(info   TARGET_ARCH=$(ARCH))
 $(info   TARGET_PRODUCT=$(TARGET_PRODUCT))
 $(info   TARGET_BUILD_VARIANT=$(TARGET_BUILD_VARIANT))
 $(info   HOST_ARCH=$(HOST_ARCH))
