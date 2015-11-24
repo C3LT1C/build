@@ -1816,6 +1816,65 @@ endef
 KERNEL_HEADERS_INSTALL := $(KERNEL_OUT)/usr
 KERNEL_MODULES_OUT := $(OUT_DIR)/$(RENDER_PRODUCT)/system/lib/modules
 
+MKBOOTIMG_ARGS := --kernel $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE) --ramdisk $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz
+ifneq ($(BOARD_2ND_BOOTLOADER_FILE),)
+$(MKBOOTIMG_ARGS) += $(BOARD_2ND_BOOTLOADER_FILE)
+endif
+$(MKBOOTIMG_ARGS) += --cmdline "$(BOARD_KERNEL_CMDLINE)"
+ifneq ($(BOARD_NAME),)
+$(MKBOOTIMG_ARGS) += --board "$(BOARD_NAME)"
+endif
+$(MKBOOTIMG_ARGS) += --base $(BOARD_KERNEL_BASE)
+$(MKBOOTIMG_ARGS) += --pagesize $(BOARD_KERNEL_PAGESIZE)
+$(MKBOOTIMG_ARGS) += --kernel_offset $(BOARD_KERNEL_OFFSET)
+ifneq ($(BOARD_KERNEL_RAMDISK_OFFSET),)
+$(MKBOOTIMG_ARGS) += --ramdisk_offset $(BOARD_KERNEL_RAMDISK_OFFSET)
+ifneq ($(BOARD_KERNEL_RAMDISK_2NDOFFSET),)
+$(MKBOOTIMG_ARGS) += $(BOARD_KERNEL_RAMDISK_2NDOFFSET)
+endif
+endif
+ifneq ($(BOARD_KERNEL_RAMDISK_OFFSET),)
+$(MKBOOTIMG_ARGS) += --tags_offset $(BOARD_KERNEL_RAMDISK_OFFSET)
+endif
+ifeq ($(TARGET_REQUIRES_DTB),true)
+$(MKBOOTIMG_ARGS) += $(OUT_DIR)/$(RENDER_PRODUCT)/dtb
+endif
+
+ifneq ($(dont_bother),true)
+subdir_makefiles := \
+		$(shell build/tools/findleaves.py --prune=.repo --prune=.git $(PWD) Android.mk)
+$(foreach mk, $(subdir_makefiles), $(eval include $(mk)))
+endif
+
+# Figure out where we are.
+define my-dir
+$(strip \
+  $(eval LOCAL_MODULE_MAKEFILE := $$(lastword $$(MAKEFILE_LIST))) \
+  $(if $(filter $(BUILD_SYSTEM)/% $(OUT_DIR)/%,$(LOCAL_MODULE_MAKEFILE)), \
+    $(error my-dir must be called before including any other makefile.) \
+   , \
+    $(patsubst %/,%,$(dir $(LOCAL_MODULE_MAKEFILE))) \
+   ) \
+ )
+endef
+
+
+
+# ---------------------------------------------------------------
+# figure out the output directories
+
+ifeq (,$(strip $(OUT_DIR)))
+ifeq (,$(strip $(OUT_DIR_COMMON_BASE)))
+ifneq ($(TOPDIR),)
+OUT_DIR := $(TOPDIR)out
+else
+OUT_DIR := $(CURDIR)/out
+endif
+else
+OUT_DIR := $(OUT_DIR_COMMON_BASE)/$(notdir $(PWD))
+endif
+endif
+
 define mv-modules
 mkdir -p $(KERNEL_MODULES_OUT);\
 ko=`find $(PRODUCT_KERNEL_SOURCE) -type f -name *.ko`;\
@@ -1829,9 +1888,16 @@ for i in $$dtb; do rm $$i; done;\
 fi
 endef
 
+define clear-all-sources
+src=`grep -r 'path="kernel/' ./.repo/local_manifests/* | sed 's/.*path="//' | sed 's/" remote=".*//'`;\
+for a in $$src; do make -C $$a mrproper; done;\
+fi
+endef
+
 define cp-zimage
+echo "$(target_arch)";\
 mkdir -p $(OUT_DIR)/$(RENDER_PRODUCT);\
-cp $(PRODUCT_KERNEL_SOURCE)/$(ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/zImage
+cp $(PRODUCT_KERNEL_SOURCE)/arch/$(ARCH)/boot/$(TARGET_ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE)
 endef
 
 define cp-zip-files
@@ -1850,7 +1916,7 @@ cd $(ANDROID_BUILD_TOP)
 endef
 
 define make_dtb
-build/tools/dtbToolCM -2 -o $(OUT_DIR)/$(RENDER_PRODUCT)/dtb -s 2048 -p $(PRODUCT_KERNEL_SOURCE)/scripts/dtc/ $(PRODUCT_KERNEL_SOURCE)/arch/arm/boot/
+build/tools/dtbToolCM -2 -o $(OUT_DIR)/$(RENDER_PRODUCT)/dtb -s 2048 -p $(PRODUCT_KERNEL_SOURCE)/scripts/dtc/ $(PRODUCT_KERNEL_SOURCE)/$(DTB_DIR)/
 endef
 
 define make_ramdisk
@@ -1858,10 +1924,10 @@ build/tools/mkbootfs $(BOARD_RAMDISK_DIR) | gzip > $(OUT_DIR)/$(RENDER_PRODUCT)/
 endef
 
 define make_boot
-build/tools/mkbootimg --kernel $(OUT_DIR)/$(RENDER_PRODUCT)/zImage --ramdisk $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz --base $(BOARD_KERNEL_BASE) --cmdline "$(BOARD_KERNEL_CMDLINE)" --output $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img
+build/tools/mkbootimg $(MKBOOTIMG_ARGS) --output $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img
 endef
 
 define clear_boot-ramdisk
 rm $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz;\
-rm $(OUT_DIR)/$(RENDER_PRODUCT)/zImage
+rm $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE)
 endef

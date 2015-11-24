@@ -35,7 +35,7 @@ except ImportError:
 
 # Config
 # set this to the default remote to use in repo
-default_rem = "gh"
+default_rem = "rk"
 # set this to the default revision to use (branch/tag name)
 default_rev = "mm6.0"
 # set this to the remote that you use for projects from your team repos
