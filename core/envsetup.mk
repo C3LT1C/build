@@ -377,12 +377,14 @@ ifeq ($(PRINT_BUILD_CONFIG),)
 PRINT_BUILD_CONFIG := true
 endif
 
+
+ifeq ($(TARGET_ZIMAGE),)
 ifeq (arm64,$(ARCH))
   TARGET_ZIMAGE := Image
 endif
-
 ifeq (arm,$(ARCH))
   TARGET_ZIMAGE := zImage
+endif
 endif
 
 ifeq ($(DTB_DIR),)
