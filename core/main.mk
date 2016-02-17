@@ -14,14 +14,14 @@ kernel:
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) $(PRODUCT_DEFCONFIG) > /dev/null
 	make -j$(CORE_COUNT) -C $(PRODUCT_KERNEL_SOURCE) $(if $(EXTRAVERSION), EXTRAVERSION=$(EXTRAVERSION)) KBUILD_BUILD_USER=$(KBUILD_BUILD_USER) KBUILD_BUILD_HOST=$(KBUILD_BUILD_HOST) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE)
 	$(cp-zimage)
-	@echo "\033[32m Copied $(PRODUCT_KERNEL_SOURCE)/arch/$(ARCH)/boot/$(TARGET_ZIMAGE) to $(OUT_DIR)/$(RENDER_PRODUCT) \033[0m"
+	@echo "\033[32m Copied $(PRODUCT_KERNEL_SOURCE)/arch/$(ARCH)/boot/$(TARGET_ZIMAGE) to $(OUT_DIR)/$(BLACK_PRODUCT) \033[0m"
 
 .PHONY: kernelclean
 kernelclean:
 	@echo "\033[32m Cleaning source \033[0m"
 	make -C $(PRODUCT_KERNEL_SOURCE) mrproper > /dev/null
-	@echo "Clearing device repacking dir: $(OUT_DIR)/$(RENDER_PRODUCT)"
-	$(shell rm -rf $(OUT_DIR)/$(RENDER_PRODUCT)/*)
+	@echo "Clearing device repacking dir: $(OUT_DIR)/$(BLACK_PRODUCT)"
+	$(shell rm -rf $(OUT_DIR)/$(BLACK_PRODUCT)/*)
 
 .PHONY: kernelclobber
 kernelclobber:
@@ -47,12 +47,12 @@ buildbootimg:
 printcompletion:
 ifeq ($(build_type),kernel)
 	@echo
-	@echo "\033[32m $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE) built successful\033[0m"
+	@echo "\033[32m $(OUT_DIR)/$(BLACK_PRODUCT)/$(TARGET_ZIMAGE) built successful\033[0m"
 else
-	$(hide) md5sum ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) | sed 's\./Zip-Files/$(RENDER_PRODUCT)/\\' > ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME).md5
+	$(hide) md5sum ./Zip-Files/$(BLACK_PRODUCT)/$(PACKAGE_TARGET_NAME) | sed 's\./Zip-Files/$(BLACK_PRODUCT)/\\' > ./Zip-Files/$(BLACK_PRODUCT)/$(PACKAGE_TARGET_NAME).md5
 	@echo
-	@echo "\033[32m ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) built successful\033[0m"
-	@echo "md5: `cat ./Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME).md5 | cut -d ' ' -f 1`"
+	@echo "\033[32m ./Zip-Files/$(BLACK_PRODUCT)/$(PACKAGE_TARGET_NAME) built successful\033[0m"
+	@echo "md5: `cat ./Zip-Files/$(BLACK_PRODUCT)/$(PACKAGE_TARGET_NAME).md5 | cut -d ' ' -f 1`"
 endif
 
 build_type := $(filter kernel anykernel bootimg,$(TARGET_BUILD_VARIANT))
@@ -68,5 +68,5 @@ ifeq ($(build_type),kernel)
 build_type_args += $(build_type_args) printcompletion
 endif
 
-.PHONY: render
-render:	$(build_type_args)
+.PHONY: black
+black:	$(build_type_args)

@@ -35,7 +35,7 @@ except ImportError:
 
 # Config
 # set this to the default remote to use in repo
-default_rem = "rk"
+default_rem = "black"
 # set this to the default revision to use (branch/tag name)
 default_rev = "mm6.0"
 # set this to the remote that you use for projects from your team repos
@@ -44,7 +44,7 @@ default_team_rem = "gh"
 # this shouldn't change unless google makes changes
 local_manifest_dir = ".repo/local_manifests"
 # change this to your name on github (or equivalent hosting)
-android_team = "RenderKernels"
+android_team = "B14CKB1RD-Kernel"
 
 
 def check_repo_exists(git_data):
@@ -222,13 +222,13 @@ def parse_device_from_folder(device):
     elif len(search) == 1:
         location = search[0]
     else:
-        print("Your device was not found. Attempting to retrieve device repository from DesolationRom's Github..")
+        print("Your device was not found. Attempting to retrieve device repository from B14CKB1RD-Kernel's Github..")
         location = parse_device_from_manifest(device)
     return location
 
 
 def parse_dependency_file(location):
-    dep_file = "render.dependencies"
+    dep_file = "black.dependencies"
     dep_location = '/'.join([location, dep_file])
     if not os.path.isfile(dep_location):
         print("WARNING: %s file not found" % dep_location)

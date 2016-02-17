@@ -99,7 +99,7 @@ function lunch()
     check_product $product
     if [ ! $DEVICE_MAKEFILE ]
     then
-        # if we can't find a product, try to grab it off the RenderKernels github
+        # if we can't find a product, try to grab it off github
         T=$(gettop)
         pushd $T > /dev/null
         build/tools/roomservice.py $product
@@ -162,9 +162,9 @@ function check_product()
         return
     fi
 
-    if [ $(grep -rl "$1" ./device/*/$(echo -n $1 | sed -e 's/^render_//g')/render.mk) ] ; then
-       export RENDER_PRODUCT=$(echo -n $1 | sed -e 's/^render_//g')
-       export DEVICE_MAKEFILE=$(grep -rl "$1" ./device/*/$RENDER_PRODUCT/render.mk)
+    if [ $(grep -rl "$1" ./device/*/$(echo -n $1 | sed -e 's/^black_//g')/black.mk) ] ; then
+       export BLACK_PRODUCT=$(echo -n $1 | sed -e 's/^black_//g')
+       export DEVICE_MAKEFILE=$(grep -rl "$1" ./device/*/$BLACK_PRODUCT/black.mk)
     else
        echo "Configuration makefile for $1 device not found.. "
        echo "Calling for room service .. "
@@ -259,6 +259,6 @@ make kernel - will build source with $CORE_COUNT threads
 make kernelclean - cleans source
 make kernelclobber - cleans source & removes zImage from $OUT_DIR
 make buildzip - builds flashable zip file (dependent on a successful make kernel attempt)
-make render - runs make kernel then make buildzip in succession
+make black - runs make kernel then make buildzip in succession
 EOF
 }

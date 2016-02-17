@@ -1814,9 +1814,9 @@ define _import-node
 endef
 
 KERNEL_HEADERS_INSTALL := $(KERNEL_OUT)/usr
-KERNEL_MODULES_OUT := $(OUT_DIR)/$(RENDER_PRODUCT)/system/lib/modules
+KERNEL_MODULES_OUT := $(OUT_DIR)/$(BLACK_PRODUCT)/system/lib/modules
 
-MKBOOTIMG_ARGS := --kernel $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE) --ramdisk $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz
+MKBOOTIMG_ARGS := --kernel $(OUT_DIR)/$(BLACK_PRODUCT)/$(TARGET_ZIMAGE) --ramdisk $(OUT_DIR)/$(BLACK_PRODUCT)/boot.img-ramdisk.gz
 ifneq ($(BOARD_2ND_BOOTLOADER_FILE),)
 $(MKBOOTIMG_ARGS) += $(BOARD_2ND_BOOTLOADER_FILE)
 endif
@@ -1837,7 +1837,7 @@ ifneq ($(BOARD_KERNEL_RAMDISK_OFFSET),)
 $(MKBOOTIMG_ARGS) += --tags_offset $(BOARD_KERNEL_RAMDISK_OFFSET)
 endif
 ifeq ($(TARGET_REQUIRES_DTB),true)
-$(MKBOOTIMG_ARGS) += $(OUT_DIR)/$(RENDER_PRODUCT)/dtb
+$(MKBOOTIMG_ARGS) += $(OUT_DIR)/$(BLACK_PRODUCT)/dtb
 endif
 
 ifneq ($(dont_bother),true)
@@ -1896,38 +1896,38 @@ endef
 
 define cp-zimage
 echo "$(target_arch)";\
-mkdir -p $(OUT_DIR)/$(RENDER_PRODUCT);\
-cp $(PRODUCT_KERNEL_SOURCE)/arch/$(ARCH)/boot/$(TARGET_ZIMAGE) $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE)
+mkdir -p $(OUT_DIR)/$(BLACK_PRODUCT);\
+cp $(PRODUCT_KERNEL_SOURCE)/arch/$(ARCH)/boot/$(TARGET_ZIMAGE) $(OUT_DIR)/$(BLACK_PRODUCT)/$(TARGET_ZIMAGE)
 endef
 
 define cp-zip-files
-cp -r $(ZIP_FILES_DIR)/* $(OUT_DIR)/$(RENDER_PRODUCT);\
+cp -r $(ZIP_FILES_DIR)/* $(OUT_DIR)/$(BLACK_PRODUCT);\
 echo "\033[32m Zipping the following files:\033[0m";\
-ziprepacks=`find $(OUT_DIR)/$(RENDER_PRODUCT) -type f`;\
+ziprepacks=`find $(OUT_DIR)/$(BLACK_PRODUCT) -type f`;\
 for i in $$ziprepacks; do echo "\033[32m $$i \033[0m"; done;\
 fi
 endef
 
 define build-zip
-mkdir -p $(ANDROID_BUILD_TOP)/Zip-Files/$(RENDER_PRODUCT);\
-cd $(OUT_DIR)/$(RENDER_PRODUCT);\
-zip -qr9 $(ANDROID_BUILD_TOP)/Zip-Files/$(RENDER_PRODUCT)/$(PACKAGE_TARGET_NAME) ./*;\
+mkdir -p $(ANDROID_BUILD_TOP)/Zip-Files/$(BLACK_PRODUCT);\
+cd $(OUT_DIR)/$(BLACK_PRODUCT);\
+zip -qr9 $(ANDROID_BUILD_TOP)/Zip-Files/$(BLACK_PRODUCT)/$(PACKAGE_TARGET_NAME) ./*;\
 cd $(ANDROID_BUILD_TOP)
 endef
 
 define make_dtb
-build/tools/dtbToolCM -2 -o $(OUT_DIR)/$(RENDER_PRODUCT)/dtb -s 2048 -p $(PRODUCT_KERNEL_SOURCE)/scripts/dtc/ $(PRODUCT_KERNEL_SOURCE)/$(DTB_DIR)/
+build/tools/dtbToolCM -2 -o $(OUT_DIR)/$(BLACK_PRODUCT)/dtb -s 2048 -p $(PRODUCT_KERNEL_SOURCE)/scripts/dtc/ $(PRODUCT_KERNEL_SOURCE)/$(DTB_DIR)/
 endef
 
 define make_ramdisk
-build/tools/mkbootfs $(BOARD_RAMDISK_DIR) | gzip > $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz
+build/tools/mkbootfs $(BOARD_RAMDISK_DIR) | gzip > $(OUT_DIR)/$(BLACK_PRODUCT)/boot.img-ramdisk.gz
 endef
 
 define make_boot
-build/tools/mkbootimg $(MKBOOTIMG_ARGS) --output $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img
+build/tools/mkbootimg $(MKBOOTIMG_ARGS) --output $(OUT_DIR)/$(BLACK_PRODUCT)/boot.img
 endef
 
 define clear_boot-ramdisk
-rm $(OUT_DIR)/$(RENDER_PRODUCT)/boot.img-ramdisk.gz;\
-rm $(OUT_DIR)/$(RENDER_PRODUCT)/$(TARGET_ZIMAGE)
+rm $(OUT_DIR)/$(BLACK_PRODUCT)/boot.img-ramdisk.gz;\
+rm $(OUT_DIR)/$(BLACK_PRODUCT)/$(TARGET_ZIMAGE)
 endef
