@@ -40,6 +40,18 @@ function add_lunch_combo()
    LUNCH_MENU_CHOICES=(${LUNCH_MENU_CHOICES[@]} $new_combo)
 }
 
+function add_toolchain_combo()
+{
+   local new_combo=$1
+   local c
+   for c in ${TOOLCHAIN_CHOICES[@]} ; do
+       if [ "$new_combo" = "$c" ] ; then
+           return
+       fi
+   done
+   TOOLCHAIN_CHOICES=(${TOOLCHAIN_CHOICES[@]} $new_combo)
+}
+
 function print_lunch_menu()
 {
    local uname=$(uname)
@@ -57,6 +69,77 @@ function print_lunch_menu()
    done | column
 
    echo
+}
+
+function print_toolchain_menu()
+{
+   echo "Toolchain menu... please choose"
+
+   local i=1
+   local choice
+   for choice in ${TOOLCHAIN_CHOICES[@]}
+   do
+       echo " $i. $choice "
+       i=$(($i+1))
+   done | column
+
+   echo
+}
+function toolchain()
+{
+    local answer
+
+    if [ "$1" ] ; then
+        answer=$1
+    else
+        print_toolchain_menu
+        echo -n "Which would you like?"
+        read answer
+    fi
+
+    local selection=
+
+    if [ -z "$answer" ]
+    then
+        lunch
+    elif (echo -n $answer | grep -q -e "^[0-9][0-9]*$")
+    then
+        if [ $answer -le ${#TOOLCHAIN_CHOICES[@]} ]
+        then
+            selection=${TOOLCHAIN_CHOICES[$(($answer-1))]}
+        fi
+    elif (echo -n $answer | grep -q -e "^[^\-][^\-]*-[^\-][^\-]*$")
+    then
+        selection=$answer
+    fi
+
+    if [ -z "$selection" ]
+    then
+        echo
+        echo "Invalid toolchain: $answer"
+        return 1
+    fi
+
+    local toolchain=$(echo -n $selection | sed -e "s/-.*$//")
+    check_toolchain $toolchain
+    if [ ! -d toolchains/$BLACK_TOOLCHAIN ]
+    then
+        # if we can't find a product, try to grab it off github
+        T=$(gettop)
+        pushd $T > /dev/null
+        build/tools/roomservice.py $toolchain
+        popd > /dev/null
+        check_toolchain $toolchain
+    else
+        build/tools/roomservice.py $toolchain true
+    fi
+    if [ $? -ne 0 ]
+    then
+        echo
+        echo "** Don't have a product spec for: '$product'"
+        echo "** Do you have the right repo manifest?"
+        toolchain=
+    fi
 }
 
 function lunch()
@@ -95,6 +178,7 @@ function lunch()
     fi
 
     local product=$(echo -n $selection | sed -e "s/-.*$//")
+    echo "$product"
     unset DEVICE_MAKEFILE
     check_product $product
     if [ ! $DEVICE_MAKEFILE ]
@@ -136,6 +220,7 @@ function lunch()
     export TARGET_BUILD_VARIANT=$variant
 
     echo
+    toolchain
     printconfig
 }
 
@@ -164,12 +249,31 @@ function check_product()
 
     if [ $(grep -rl "$1" ./device/*/$(echo -n $1 | sed -e 's/^black_//g')/black.mk) ] ; then
        export BLACK_PRODUCT=$(echo -n $1 | sed -e 's/^black_//g')
-       export DEVICE_MAKEFILE=$(grep -rl "$1" ./device/*/$BLACK_PRODUCT/black.mk)
+       export DEVICE_MAKEFILE=$(grep -rl "$1" device/*/$BLACK_PRODUCT/black.mk)
+       unset TOOLCHAIN_CHOICES
+       . device/*/$BLACK_PRODUCT/toolchainsetup.sh
     else
        echo "Configuration makefile for $1 device not found.. "
        echo "Calling for room service .. "
     fi
 }
+
+function check_toolchain()
+{
+    T=$(gettop)
+    if [ ! "$T" ]; then
+        echo "Couldn't locate the top of the tree.  Try setting TOP." >&2
+        return
+    fi
+
+    if [ -d ./toolchains/$(echo -n $1 | sed -e 's\_\/\g') ] ; then
+       export BLACK_TOOLCHAIN=$(echo -n $1 | sed -e 's\_\/\g')
+    else
+       echo "Configuration for $1 toolchain not found.. "
+       echo "Calling for room service .. "
+    fi
+}
+
 
 # Get the exact value of a build variable.
 function get_build_var()

@@ -387,6 +387,8 @@ ifeq (arm,$(ARCH))
 endif
 endif
 
+CROSS_COMPILE := $(ANDROID_BUILD_TOP)/toolchains/$(BLACK_TOOLCHAIN)/bin/$(TOOLCHAIN_SUFFIX)
+
 ifeq ($(DTB_DIR),)
 DTB_DIR := arch/arm/boot
 endif
