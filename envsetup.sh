@@ -119,10 +119,9 @@ function toolchain()
         echo "Invalid toolchain: $answer"
         return 1
     fi
-
-    local toolchain=$(echo -n $selection | sed -e "s/-.*$//")
+    toolchain=$selection
     check_toolchain $toolchain
-    if [ ! -d toolchains/$BLACK_TOOLCHAIN ]
+    if [ ! -d toolchains/$(echo -n $toolchain | sed -e 's\-\/\') ]
     then
         # if we can't find a product, try to grab it off github
         T=$(gettop)
@@ -250,7 +249,7 @@ function check_product()
     if [ $(grep -rl "$1" ./device/*/$(echo -n $1 | sed -e 's/^black_//g')/black.mk) ] ; then
        export BLACK_PRODUCT=$(echo -n $1 | sed -e 's/^black_//g')
        export DEVICE_MAKEFILE=$(grep -rl "$1" device/*/$BLACK_PRODUCT/black.mk)
-       unset TOOLCHAIN_CHOICES
+       unset TOOLCHAIN_CHOICES       
        . device/*/$BLACK_PRODUCT/toolchainsetup.sh
     else
        echo "Configuration makefile for $1 device not found.. "
@@ -266,8 +265,8 @@ function check_toolchain()
         return
     fi
 
-    if [ -d ./toolchains/$(echo -n $1 | sed -e 's\_\/\g') ] ; then
-       export BLACK_TOOLCHAIN=$(echo -n $1 | sed -e 's\_\/\g')
+    if [ -d ./toolchains/$(echo -n $1 | sed -e 's\-\/\g') ] ; then
+       export BLACK_TOOLCHAIN=$(echo -n $1 | sed -e 's\-\/\g')
     else
        echo "Configuration for $1 toolchain not found.. "
        echo "Calling for room service .. "
