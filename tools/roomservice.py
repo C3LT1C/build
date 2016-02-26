@@ -180,9 +180,9 @@ def create_manifest_remove(url):
     return remove
 
 
-def append_to_manifest(project):
+def append_to_manifest(project,device):
     try:
-        lm = ES.parse('/'.join([local_manifest_dir, "roomservice.xml"]))
+        lm = ES.parse('/'.join([local_manifest_dir, device+".xml"]))
         lm = lm.getroot()
     except IOError, ES.ParseError:
         lm = ES.Element("manifest")
@@ -190,14 +190,14 @@ def append_to_manifest(project):
     return lm
 
 
-def write_to_manifest(manifest):
+def write_to_manifest(manifest,device):
     indent(manifest)
     raw_xml = ES.tostring(manifest).decode()
     raw_xml = ''.join(['<?xml version="1.0" encoding="UTF-8"?>\n'
                        '<!--Please do not manually edit this file-->\n',
                        raw_xml])
 
-    with open('/'.join([local_manifest_dir, "roomservice.xml"]), 'w') as f:
+    with open('/'.join([local_manifest_dir, device+".xml"]), 'w') as f:
         f.write(raw_xml)
     print("Written to local device manifests")
 
@@ -241,7 +241,7 @@ def parse_dependency_file(location):
     return dependencies
 
 
-def create_dependency_manifest(dependencies):
+def create_dependency_manifest(dependencies,device):
     projects = []
     for dependency in dependencies:
         repository = dependency.get("repository")
@@ -259,8 +259,8 @@ def create_dependency_manifest(dependencies):
                                           remote=remote,
                                           revision=revision)
         if not project is None:
-            manifest = append_to_manifest(project)
-            write_to_manifest(manifest)
+            manifest = append_to_manifest(project,device)
+            write_to_manifest(manifest,device)
             projects.append(target_path)
     if len(projects) > 0:
         os.system("repo sync -f --no-clone-bundle %s" % " ".join(projects))
@@ -272,7 +272,7 @@ def fetch_dependencies(device):
         raise Exception("ERROR: could not find your device "
                         "folder location, bailing out")
     dependencies = parse_dependency_file(location)
-    create_dependency_manifest(dependencies)
+    create_dependency_manifest(dependencies,device)
 
 
 def check_device_exists(device):
@@ -293,8 +293,8 @@ def fetch_device(device):
                                       device_dir,
                                       remote=default_team_rem)
     if not project is None:
-        manifest = append_to_manifest(project)
-        write_to_manifest(manifest)
+        manifest = append_to_manifest(project,device)
+        write_to_manifest(manifest,device)
         print("syncing the device config")
         os.system('repo sync -f --no-clone-bundle %s' % device_dir)
 
