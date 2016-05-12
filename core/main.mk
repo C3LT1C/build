@@ -3,6 +3,17 @@ include $(BUILD_SYSTEM)/definitions.mk
 include $(BUILD_SYSTEM)/dumpvar.mk
 include $(BUILD_SYSTEM)/envsetup.mk
 
+ARCH := $(shell find $(ANDROID_BUILD_TOP)/$(PRODUCT_KERNEL_SOURCE) -name $(PRODUCT_DEFCONFIG) | sed 's\'$(ANDROID_BUILD_TOP)/$(PRODUCT_KERNEL_SOURCE)'\\' | sed 's\arch*.\\' | sed 's\configs.*\\' | sed -r 's\[/]\\g' )
+
+ifeq ($(TARGET_ZIMAGE),)
+ifeq (arm64,$(ARCH))
+  TARGET_ZIMAGE := Image
+endif
+ifeq (arm,$(ARCH))
+  TARGET_ZIMAGE := zImage
+endif
+endif
+
 .PHONY: kernel
 kernel:
 	$(info =-=-=-= Starting build =-=-=-=)

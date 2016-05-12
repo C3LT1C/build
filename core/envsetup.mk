@@ -377,16 +377,6 @@ ifeq ($(PRINT_BUILD_CONFIG),)
 PRINT_BUILD_CONFIG := true
 endif
 
-
-ifeq ($(TARGET_ZIMAGE),)
-ifeq (arm64,$(ARCH))
-  TARGET_ZIMAGE := Image
-endif
-ifeq (arm,$(ARCH))
-  TARGET_ZIMAGE := zImage
-endif
-endif
-
 CROSS_COMPILE := $(ANDROID_BUILD_TOP)/toolchains/$(BLACK_TOOLCHAIN)/bin/$(TOOLCHAIN_SUFFIX)
 
 ifeq ($(DTB_DIR),)
