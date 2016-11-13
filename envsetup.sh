@@ -141,6 +141,41 @@ function toolchain()
     fi
 }
 
+function unlunch()
+{
+unset CHOICE
+let i=0 # define counting variable
+W=() # define working array
+while read -r line; do # process file by file
+    let i=$i+1
+    W+=($i "$line")
+#done < <( ls *.xml | sed -e 's\.xml\\' )
+done < <(find $ANDROID_BUILD_TOP/.repo/local_manifests/ -name "*.xml" | sed 's!.*/!!' | sed 's!.xml!!')
+FILE=$(dialog --no-cancel --title "Unlunch XML removal"  --menu "Choose one | Ctrl&C to cancel" 24 80 17 "${W[@]}" 3>&2 2>&1 1>&3) # show dialog and store output
+clear
+if [ $? -eq 0 ]; then # Exit with OK
+   CHOICE=$(readlink -f $(ls -1 $ANDROID_BUILD_TOP/.repo/local_manifests/*.xml | sed -n "`echo "$FILE p" | sed 's/ //'`"))
+   while read -p  $(echo $CHOICE | sed 's!.*/!!')" $FILE has been chosen for removal from local manifests. Proceed with sync and removal? [Y|y or N|n] " b
+   do
+   echo ""
+   case $b in
+   Y|y )
+   rm $CHOICE
+   repo sync kernel_manifests
+   break
+   ;;
+   N|n )
+   break
+   ;;
+   * )
+   echo "Invalid entry"
+   echo ""
+   ;;
+esac
+done
+fi
+}
+
 function lunch()
 {
     local answer
