@@ -246,11 +246,11 @@ function check_product()
         return
     fi
 
-    if [ $(grep -rl "$1" ./device/*/$(echo -n $1 | sed -e 's/^black_//g')/black.mk) ] ; then
-       export BLACK_PRODUCT=$(echo -n $1 | sed -e 's/^black_//g')
-       export DEVICE_MAKEFILE=$(grep -rl "$1" device/*/$BLACK_PRODUCT/black.mk)
+    if [ $(grep -rl "$1" ./device/*/$(echo -n $1 | sed -e 's/^celtic_//g')/celtic.mk) ] ; then
+       export CELTIC_PRODUCT=$(echo -n $1 | sed -e 's/^celtic_//g')
+       export DEVICE_MAKEFILE=$(grep -rl "$1" device/*/$CELTIC_PRODUCT/celtic.mk)
        unset TOOLCHAIN_CHOICES       
-       . device/*/$BLACK_PRODUCT/toolchainsetup.sh
+       . device/*/$CELTIC_PRODUCT/toolchainsetup.sh
     else
        echo "Configuration makefile for $1 device not found.. "
        echo "Calling for room service .. "
@@ -266,7 +266,7 @@ function check_toolchain()
     fi
 
     if [ -d ./toolchains/$(echo -n $1 | sed -e 's\-\/\g') ] ; then
-       export BLACK_TOOLCHAIN=$(echo -n $1 | sed -e 's\-\/\g')
+       export CELTIC_TOOLCHAIN=$(echo -n $1 | sed -e 's\-\/\g')
     else
        echo "Configuration for $1 toolchain not found.. "
        echo "Calling for room service .. "
@@ -362,6 +362,6 @@ make kernel - will build source with $CORE_COUNT threads
 make kernelclean - cleans source
 make kernelclobber - cleans source & removes zImage from $OUT_DIR
 make buildzip - builds flashable zip file (dependent on a successful make kernel attempt)
-make black - runs make kernel then make buildzip in succession
+make celtic - runs make kernel then make buildzip in succession
 EOF
 }

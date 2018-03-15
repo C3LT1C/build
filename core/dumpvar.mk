@@ -82,6 +82,6 @@ $(info   HOST_OS=$(HOST_OS))
 $(info   HOST_OS_EXTRA=$(HOST_OS_EXTRA))
 $(info   OUT_DIR=$(OUT_DIR))
 $(info	 CORE_COUNT=$(CORE_COUNT))
-$(info   TOOLCHAIN=$(ANDROID_BUILD_TOP)/$(BLACK_TOOLCHAIN))
+$(info   TOOLCHAIN=$(ANDROID_BUILD_TOP)/$(CELTIC_TOOLCHAIN))
 $(info =======================)
 endif
