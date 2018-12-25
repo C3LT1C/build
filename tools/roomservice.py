@@ -37,7 +37,7 @@ except ImportError:
 # set this to the default remote to use in repo
 default_rem = "celtic"
 # set this to the default revision to use (branch/tag name)
-default_rev = "o"
+default_rev = "p9.0"
 # set this to the remote that you use for projects from your team repos
 # example fetch="https://github.com/omnirom"
 default_team_rem = "gh"
